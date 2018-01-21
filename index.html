@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="favicon.ico">
+    <title>XLM Inflation Pool</title>
+  </head>
+  <body>
+    <div class="cover-container d-flex h-100 p-3 mx-auto flex-column">
+
+      <header class="masthead mb-auto">
+        <div class="inner">
+          <h5 class="masthead-brand">XLM Inflation Pool</h5>
+          <nav class="nav nav-masthead justify-content-center">
+            <a class="nav-link active" href="#">Home</a>
+            <a class="nav-link" href="#faq">FAQ</a>
+          </nav>
+        </div>
+      </header>
+
+      <main role="main" class="inner cover">
+        <div class="full-height">
+          <br>
+          <br>
+          <br>
+          <div class="text-center">
+            <p class="lead">Vote to the address below to get your free inflation lumens (XLM) every week</p>
+            <p class="lead public-address">GAUXSQSUPHZYNVHH7RP3MLE5JECYHBH5JXAJU36D5W2KK4CQFL6XRFBM</p>
+            <p class="lead">
+              <a href="#how-to-vote" class="btn btn-lg btn-secondary">Get Started</a>
+            </p>
+          </div>
+          <br>
+          <br>
+          <div class="row">
+            <div class="col-sm-8 m-t-10">
+              <input id="public_address" class="form-control" type="text" placeholder="Your public address">
+            </div>
+
+            <div class="col-sm-4 m-t-10">
+              <button id="check_vote" class="btn btn-primary btn-block">Check My Vote</button>
+            </div>
+          </div>
+          <div class="row m-t-10">
+            <div class="col-sm-12">
+              <div id="vote_result" class="alert alert-success" role="alert" hidden>
+                Congratulation! You are currently voting {{xlm}} XLM
+              </div>
+            </div>
+          </div>
+
+          <br>
+          <hr class="white-line">
+
+          <div class="row m-t-10">
+            <div class="col-sm-12 text-center">
+              We charge 1% out of the inflation XLM payout for maintaining the website and service.<br>
+              Thank you for your support!
+            </div>
+          </div>
+        </div>
+
+        <hr class="white-line">
+
+        <div id="faq">
+          <div class="row">
+            <div class="col-sm-12">
+              <h2>Frequently Asked Question</h2>
+            </div>
+          </div>
+
+          <br>
+          <br>
+
+          <div id="how-to-vote" class="row">
+            <div class="col-sm-12">
+              <h5>How do I vote?</h5>
+              <br>
+              <p>1. Download the latest version of <a href="https://www.stellar.org/lumens/wallets/">Stellar Desktop Client</a></p>
+              <img src="img/download_client.png">
+              <br>
+              <br>
+              <p>2. Go to your account and vote to <b>GAUXSQSUPHZYNVHH7RP3MLE5JECYHBH5JXAJU36D5W2KK4CQFL6XRFBM</b></p>
+              <img src="img/setup.png">
+              <br>
+              <br>
+              <p>3. Confirm that you have already voted to xlminflationpool using <a href="#"><button class="btn btn-sm btn-primary">Check My Vote</button></a></p>
+            </div>
+          </div>
+
+          <hr class="white-line">
+
+          <div class="row">
+            <div class="col-sm-12">
+              <h5>Why should you do this?</h5>
+              <p>
+                The Stellar Network has an inflation mechanism and every week new lumens are created and distributed. 
+                Vote to XLM Inflation Pool in order to receive your share of the new inflation lumens that are distributed weekly.
+              </p>
+            </div>
+          </div>
+
+          <hr class="white-line">
+
+          <div class="row">
+            <div class="col-sm-12">
+              <h5>Is there any risk in doing this?</h5>
+              <p>
+                There is no risk in setting inflation address, all XLM will remain in your wallet. We will allocate inflation XLM to your wallet address every week once we have exceed the required vote.
+              </p>
+            </div>
+          </div>
+          
+          <hr class="white-line">
+
+          <div class="row">
+            <div class="col-sm-12">
+              <h5>Is there any fee in using this service?</h5>
+              <p>
+                It is totally free to set an inflation destination address.<br>
+                Upon payout, we charge 1% out of the inflation XLM payout for maintaining the website and service. Thank you for your support.
+              </p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="js/jquery.min.js"></script>
+
+    <script>
+      function checkVote( address ) {
+        return $.ajax({
+          method: 'get',
+          url : 'https://horizon.stellar.org/accounts/' + address
+        })
+        .then(function( data ) {
+          var xlm = data.balances
+            .filter( function( balance ) { return balance.asset_type === 'native' } )
+            .reduce( function( a, b ) {
+              return a + Number( b.balance );
+            }, 0 );
+
+          return { balance : Number( xlm.toFixed( 7 ) ), inflation_destination : data.inflation_destination };
+        })
+        .catch(function(err) {
+          console.error( err );
+          return Promise.reject( 'Address ' + address + ' not found' );
+        });
+      } 
+
+      function showVote( text, success ) {
+        var alert = $("#vote_result");
+        alert.html( text );
+
+        alert.removeAttr('hidden');
+        if ( success ) {
+          alert.addClass('alert-success');
+          alert.removeClass('alert-danger');
+        } else {
+          alert.addClass('alert-danger');
+          alert.removeClass('alert-success');
+        }
+      }
+
+      $(document).ready(function() {
+        var navigationLinks = $("a.nav-link");
+        navigationLinks.click(function() {
+          navigationLinks.removeClass('active');
+          $(this).addClass('active');
+        });
+
+        var checkVoteButton = $("#check_vote");
+        var publicAddressInput = $("#public_address");
+        var alert = $("#vote_result");
+
+        checkVoteButton.click(function() {
+          var address = publicAddressInput.val().trim();
+
+          alert.attr('hidden');
+
+          checkVote( address )
+          .then( function( data ) {
+            if ( data.inflation_destination === 'GAUXSQSUPHZYNVHH7RP3MLE5JECYHBH5JXAJU36D5W2KK4CQFL6XRFBM' ) {
+              showVote('Congratulation! You are currently voting <b>{{xlm}}</b> XLM to XLM Inflation Pool'.replace(/{{xlm}}/, data.balance), true);
+            } else {
+              showVote('This address is not voting at XLM Inflation Pool at the moment. <a href="#faq"><button class="btn btn-primary">Vote {{xlm}} XLM now</button></a>'.replace(/{{xlm}}/, data.balance), false);
+            }
+          } )
+          .catch( function( err ) {
+            showVote( err, false );
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
